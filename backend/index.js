@@ -5,6 +5,8 @@ const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { db, initDb } = require('./src/db');
+const { optimisticLockMiddleware, validateStatusTransition } = require('./src/middleware/concurrency');
+const { logInterviewChange, getInterviewLogs } = require('./src/utils/auditLogger');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -138,17 +140,69 @@ app.delete('/api/favorites/:id', authenticateToken, (req, res) => {
 app.get('/api/interviews', authenticateToken, (req, res) => {
     res.json(db.get('interviews').value());
 });
+
+app.get('/api/interviews/:id/logs', authenticateToken, (req, res) => {
+    const logs = getInterviewLogs(db, parseInt(req.params.id));
+    res.json(logs);
+});
+
 app.post('/api/interviews', authenticateToken, (req, res) => {
-    const newItem = { id: Date.now(), ...req.body };
+    const newItem = { id: Date.now(), version: 0, ...req.body };
     db.get('interviews').push(newItem).write();
+    logInterviewChange(db, {
+        oldInterview: null,
+        newInterview: newItem,
+        user: req.user,
+        customAction: '创建面试预约'
+    });
     res.status(201).json(newItem);
 });
-app.put('/api/interviews/:id', authenticateToken, (req, res) => {
-    db.get('interviews').find({ id: parseInt(req.params.id) }).assign(req.body).write();
-    res.json({ message: 'Updated' });
+
+app.put('/api/interviews/:id', authenticateToken, optimisticLockMiddleware(db), validateStatusTransition(db), (req, res) => {
+    const interviewId = parseInt(req.params.id);
+    const oldInterview = req.oldInterview;
+
+    const allowedFields = ['name', 'job', 'time', 'type', 'status', 'interviewer', 'evaluation', 'room'];
+    const updateData = {};
+    allowedFields.forEach(field => {
+        if (req.body[field] !== undefined) {
+            updateData[field] = req.body[field];
+        }
+    });
+
+    const currentRecord = db.get('interviews').find({ id: interviewId });
+    const current = currentRecord.value();
+
+    const latestVersion = (current.version || 0) + 1;
+    updateData.version = latestVersion;
+
+    currentRecord.assign(updateData).write();
+
+    const newInterview = { ...current, ...updateData };
+
+    logInterviewChange(db, {
+        oldInterview,
+        newInterview,
+        user: req.user
+    });
+
+    res.json({ message: 'Updated', latestVersion, data: newInterview });
 });
+
 app.delete('/api/interviews/:id', authenticateToken, (req, res) => {
-    db.get('interviews').remove({ id: parseInt(req.params.id) }).write();
+    const interviewId = parseInt(req.params.id);
+    const oldInterview = db.get('interviews').find({ id: interviewId }).value();
+    db.get('interviews').remove({ id: interviewId }).write();
+
+    if (oldInterview) {
+        logInterviewChange(db, {
+            oldInterview,
+            newInterview: null,
+            user: req.user,
+            customAction: '删除面试预约'
+        });
+    }
+
     res.json({ message: 'Deleted' });
 });
 

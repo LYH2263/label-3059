@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Sidebar, Header, FilterBar } from '../common/components/Layout';
-import { Calendar as CalendarIcon, List, Plus, CheckCircle, XCircle, StickyNote, Eye } from 'lucide-react';
+import { Calendar as CalendarIcon, List, Plus, CheckCircle, XCircle, StickyNote, Eye, RefreshCw } from 'lucide-react';
 import { useToast, Modal } from '../common/components/Feedback';
 import { InterviewAPI, OrgAPI } from '../common/api/request';
+import { useOptimisticUpdate } from '../hooks/useOptimisticUpdate';
 
 export const InterviewManagement = () => {
     const [viewMode, setViewMode] = useState('list'); // list or calendar
@@ -24,24 +25,11 @@ export const InterviewManagement = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [editInterviewerModal, setEditInterviewerModal] = useState(null);
+    const [logsModal, setLogsModal] = useState(null);
+    const [interviewLogs, setInterviewLogs] = useState([]);
     const { showToast } = useToast();
 
-    const handleApplyTemplate = (content) => {
-        setEvalText(prev => prev + (prev ? '\n' : '') + content);
-        showToast('已应用模板');
-    };
-
-    const submitEvaluation = async () => {
-        try {
-            await InterviewAPI.update(evalModal.id, { ...evalModal, evaluation: evalText, status: '已结束' });
-            showToast('评价已提交并归档');
-            setEvalModal(null);
-            setEvalText('');
-            fetchInterviews();
-        } catch { showToast('提交失败', 'error'); }
-    };
-
-    const fetchInterviews = async () => {
+    const fetchInterviews = useCallback(async () => {
         try {
             const res = await InterviewAPI.list();
             setInterviews(res);
@@ -50,6 +38,25 @@ export const InterviewManagement = () => {
         } finally {
             setLoading(false);
         }
+    }, [showToast]);
+
+    const optimisticUpdate = useOptimisticUpdate(fetchInterviews, showToast);
+
+    const handleApplyTemplate = (content) => {
+        setEvalText(prev => prev + (prev ? '\n' : '') + content);
+        showToast('已应用模板');
+    };
+
+    const submitEvaluation = async () => {
+        const currentItem = interviews.find(i => i.id === evalModal.id);
+        await optimisticUpdate.update(
+            (data) => InterviewAPI.update(evalModal.id, data),
+            currentItem,
+            { evaluation: evalText, status: evalModal.status },
+            { successMessage: '评价已提交并归档' }
+        );
+        setEvalModal(null);
+        setEvalText('');
     };
 
     const fetchInterviewers = async () => {
@@ -60,10 +67,24 @@ export const InterviewManagement = () => {
         } catch {}
     };
 
-    useEffect(() => { 
-        fetchInterviews(); 
+    const fetchLogs = async (id) => {
+        try {
+            const res = await fetch(`/api/interviews/${id}/logs`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            const logs = await res.json();
+            setInterviewLogs(logs);
+        } catch (err) {
+            showToast('获取日志失败', 'error');
+        }
+    };
+
+    useEffect(() => {
+        fetchInterviews();
         fetchInterviewers();
-    }, []);
+    }, [fetchInterviews]);
 
     useEffect(() => {
         let result = interviews;
@@ -93,25 +114,27 @@ export const InterviewManagement = () => {
     };
 
     const handleUpdateStatus = async (id, status) => {
-        try {
-            await InterviewAPI.update(id, { status });
-            showToast(`状态已更新为: ${status}`);
-            if (showRoomModal && showRoomModal.id === id) {
-                setShowRoomModal({ ...showRoomModal, status });
-            }
-            fetchInterviews();
-        } catch (err) {
-            showToast('更新失败', 'error');
+        const currentItem = interviews.find(i => i.id === id);
+        await optimisticUpdate.update(
+            (data) => InterviewAPI.update(id, data),
+            currentItem,
+            { status },
+            { successMessage: `状态已更新为: ${status}` }
+        );
+        if (showRoomModal && showRoomModal.id === id) {
+            setShowRoomModal(null);
         }
     };
 
     const handleUpdateInterviewer = async (id, interviewer) => {
-        try {
-            await InterviewAPI.update(id, { interviewer });
-            showToast('面试官分配已更新');
-            setEditInterviewerModal(null);
-            fetchInterviews();
-        } catch { showToast('分配失败', 'error'); }
+        const currentItem = interviews.find(i => i.id === id);
+        await optimisticUpdate.update(
+            (data) => InterviewAPI.update(id, data),
+            currentItem,
+            { interviewer },
+            { successMessage: '面试官分配已更新' }
+        );
+        setEditInterviewerModal(null);
     };
 
     const handleDelete = async (id) => {
@@ -196,10 +219,11 @@ export const InterviewManagement = () => {
                                                 }}>{item.status}</span>
                                             </td>
                                             <td>
-                                                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                                     <button style={{ color: 'var(--primary)', background: 'none', fontSize: '13px' }} onClick={() => setEvalModal(item)}>评价</button>
                                                     <button style={{ color: 'var(--primary)', background: 'none', fontSize: '13px' }} onClick={() => setEditInterviewerModal(item)}>分配</button>
-                                                    <button style={{ color: 'var(--primary)', background: 'none', fontSize: '13px' }} onClick={() => setShowRoomModal(item)}>进入频道</button>
+                                                    <button style={{ color: 'var(--primary)', background: 'none', fontSize: '13px' }} onClick={() => setShowRoomModal(item)}>频道</button>
+                                                    <button style={{ color: '#64748B', background: 'none', fontSize: '13px' }} onClick={() => { setLogsModal(item); fetchLogs(item.id); }}>日志</button>
                                                     <button style={{ color: '#EF4444', background: 'none', fontSize: '13px' }} onClick={() => handleDelete(item.id)}>取消</button>
                                                 </div>
                                             </td>
@@ -454,6 +478,77 @@ export const InterviewManagement = () => {
                                 const val = document.querySelector('select').value;
                                 handleUpdateInterviewer(editInterviewerModal.id, val);
                             }}>确认提交</button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {logsModal && (
+                <Modal title={`操作日志 - ${logsModal.name}`} size="large" onClose={() => setLogsModal(null)}>
+                    <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                        {interviewLogs.length === 0 ? (
+                            <p style={{ textAlign: 'center', color: '#94A3B8', padding: '40px' }}>暂无操作日志</p>
+                        ) : (
+                            interviewLogs.map((log) => (
+                                <div key={log.id} style={{ padding: '12px', borderBottom: '1px solid #F1F5F9', marginBottom: '8px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                                        <span style={{ fontWeight: 600, fontSize: '14px' }}>{log.action}</span>
+                                        <span style={{ color: '#94A3B8', fontSize: '12px' }}>{log.timestamp_local}</span>
+                                    </div>
+                                    <div style={{ fontSize: '12px', color: '#64748B', marginBottom: '6px' }}>
+                                        操作人: {log.operator_name} ({log.operator_role})
+                                    </div>
+                                    {Object.keys(log.changes || {}).length > 0 && (
+                                        <div style={{ background: '#F8FAFC', padding: '8px', borderRadius: '6px', fontSize: '12px' }}>
+                                            <div style={{ marginBottom: '4px', fontWeight: 600 }}>变更详情:</div>
+                                            {Object.entries(log.changes).map(([key, val]) => (
+                                                <div key={key} style={{ color: '#475569' }}>
+                                                    {key}: <span style={{ color: '#EF4444' }}>{JSON.stringify(val.old)}</span> → <span style={{ color: '#10B981' }}>{JSON.stringify(val.new)}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </Modal>
+            )}
+
+            {optimisticUpdate.conflictModal && (
+                <Modal
+                    title={optimisticUpdate.conflictModal.type === 'conflict' ? '并发冲突' : '状态错误'}
+                    onClose={() => optimisticUpdate.setConflictModal(null)}
+                >
+                    <div style={{ padding: '8px 0' }}>
+                        <div style={{
+                            background: optimisticUpdate.conflictModal.type === 'conflict' ? '#FFFBEB' : '#FEF2F2',
+                            padding: '16px',
+                            borderRadius: '8px',
+                            marginBottom: '16px',
+                            borderLeft: `4px solid ${optimisticUpdate.conflictModal.type === 'conflict' ? '#F59E0B' : '#EF4444'}`
+                        }}>
+                            <p style={{ fontSize: '14px', margin: 0, color: '#1E293B' }}>
+                                {optimisticUpdate.conflictModal.message}
+                            </p>
+                        </div>
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                            <button
+                                className="btn-secondary"
+                                style={{ flex: 1 }}
+                                onClick={() => optimisticUpdate.setConflictModal(null)}
+                            >
+                                关闭
+                            </button>
+                            {optimisticUpdate.conflictModal.type === 'conflict' && (
+                                <button
+                                    className="btn-primary"
+                                    style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                                    onClick={optimisticUpdate.refreshAndRetry}
+                                >
+                                    <RefreshCw size={14} /> 刷新并重试
+                                </button>
+                            )}
                         </div>
                     </div>
                 </Modal>

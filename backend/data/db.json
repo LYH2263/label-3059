@@ -3,30 +3,39 @@
     {
       "id": 1,
       "username": "admin",
-      "password": "$2a$10$eRkoMBFFzWHMlwqRRJkgpeSHGH2ducFEC7ud3cjdGV.3dTgl9qQMS",
-      "real_name": "Talent Root321321",
+      "password": "$2a$10$fnaJRMiLMJRkVAKBEZ0iXeUn1FucVKVm2RyuvUKBhiRR/6v11oNqy",
+      "real_name": "Talent Root",
       "role": "招聘主管",
       "avatar": ""
     }
   ],
   "invitations": [
     {
-      "id": 1772467273740,
-      "name": "321",
-      "job": "321",
+      "id": 1,
+      "name": "张伟",
+      "job": "前端开发",
       "recruiter": "Talent Root",
-      "status": "待邀约",
-      "remark": "",
-      "time": "3/2/2026, 4:01:13 PM"
+      "time": "2023-11-20 14:00",
+      "status": "已邀约",
+      "remark": "已安排初试"
     },
     {
-      "id": 1772468251843,
-      "name": "231321",
-      "job": "前端开发工程",
+      "id": 2,
+      "name": "王敏",
+      "job": "后端架构",
       "recruiter": "Talent Root",
+      "time": "2023-11-19 10:30",
       "status": "待邀约",
-      "remark": "321",
-      "time": "3/2/2026, 4:17:31 PM"
+      "remark": "需跟进面试官时间"
+    },
+    {
+      "id": 3,
+      "name": "李芳",
+      "job": "资深产品经理",
+      "recruiter": "招聘小组 A",
+      "time": "2023-11-18 16:15",
+      "status": "已拒绝",
+      "remark": "薪资期望不符"
     }
   ],
   "jobs": [
@@ -36,7 +45,7 @@
       "dept": "研发部",
       "apply_count": 120,
       "interview_count": 12,
-      "status": "已暂停",
+      "status": "招聘中",
       "time": "2023-11-10"
     },
     {
@@ -49,174 +58,47 @@
       "time": "2023-11-12"
     },
     {
-      "id": 1772466363417,
-      "apply_count": 0,
-      "interview_count": 0,
-      "time": "2026-03-02",
-      "name": "测试",
-      "dept": "研发部",
-      "status": "招聘中"
-    },
-    {
-      "id": 1772466488132,
-      "apply_count": 0,
-      "interview_count": 0,
-      "time": "2026-03-02",
-      "name": "231321",
-      "dept": "研发部",
-      "status": "招聘中"
-    },
-    {
-      "id": 1772468316260,
-      "apply_count": 0,
-      "interview_count": 0,
-      "time": "2026-03-02",
-      "name": "测测231",
-      "dept": "研发部",
-      "status": "已下线"
+      "id": 3,
+      "name": "视觉设计师",
+      "dept": "设计部",
+      "apply_count": 210,
+      "interview_count": 18,
+      "status": "面试中",
+      "time": "2023-11-08"
     }
   ],
   "messages": [
     {
-      "id": 1772617926572,
-      "unread": 0,
-      "type": "任务提醒",
-      "title": "简历优化建议",
-      "content": "王五 面试官已对 候选人赵六 提交了评价。",
-      "time": "17:52"
-    },
-    {
-      "id": 1772617933028,
-      "unread": 0,
+      "id": 1,
       "type": "系统通知",
-      "title": "新职位申请",
-      "content": "下午两点有空聊一下那个架构师职位的二试安排吗？",
-      "time": "17:52"
+      "title": "面试评价提醒",
+      "content": "您今天下午有3个面试评价待回收，请及时处理。",
+      "time": "10:00",
+      "unread": 1
     },
     {
-      "id": 1772617942505,
-      "unread": 0,
+      "id": 2,
+      "type": "任务提醒",
+      "title": "简历待筛选",
+      "content": "「产品经理」岗位有12份新简历，请查阅。",
+      "time": "09:30",
+      "unread": 1
+    },
+    {
+      "id": 3,
       "type": "私信",
-      "title": "张经理的消息",
-      "content": "建议完善 视觉设计 岗位的招聘JD。",
-      "time": "17:52"
+      "title": "张三 (HRBP)",
+      "content": "关于那个候选人的薪资方案，我有几个建议想和你讨论。",
+      "time": "昨天",
+      "unread": 0
     },
     {
-      "id": 1773646452237,
-      "unread": 0,
-      "type": "任务提醒",
-      "title": "新职位申请",
-      "content": "下午两点有空聊一下那个架构师职位的二试安排吗？",
-      "time": "15:34"
-    },
-    {
-      "id": 1773648777277,
-      "unread": 0,
-      "type": "任务提醒",
-      "title": "面试官反馈",
-      "content": "候选人 李强 刚刚申请了 资深开发 职位。",
-      "time": "16:12"
-    },
-    {
-      "id": 1773648781419,
-      "unread": 1,
+      "id": 4,
       "type": "系统通知",
-      "title": "简历优化建议",
-      "content": "候选人 李强 刚刚申请了 资深开发 职位。",
-      "time": "16:13"
-    }
-  ],
-  "memos": [
-    {
-      "id": 1,
-      "title": "你好",
-      "content": "<ul><li><b><i><u>你好3213213</u></i></b><br></li><li><b><i><u><font color=\"#ff8a3d\">321</font></u></i></b></li><li><b><i><u><font color=\"#ff8a3d\">321</font></u></i></b></li><li><b><i><u><font color=\"#ff8a3d\">321</font></u></i></b></li></ul>",
-      "date": "11月20日",
-      "tag": "随笔",
-      "candidate": "231321",
-      "job": "测试"
-    },
-    {
-      "id": 1772468336885,
-      "date": "今天",
-      "title": "简历筛选要点",
-      "content": "1. 重点查看项目深度。2. <font color=\"#ff8a3d\">必须有大厂背景</font>。321321",
-      "tag": "随笔",
-      "candidate": "231321",
-      "job": "产品经理 (AI方向)"
-    },
-    {
-      "id": 1772614682697,
-      "date": "今天",
-      "title": "321321",
-      "content": "123123",
-      "tag": "随笔"
-    },
-    {
-      "id": 1772616316021,
-      "date": "今天",
-      "title": "ccc",
-      "content": "<b>123123</b>",
-      "tag": "随笔"
-    },
-    {
-      "id": 1772616333415,
-      "date": "今天",
-      "title": "太紧急了",
-      "content": "太紧急了太紧急了太紧急了太紧急了",
-      "tag": "紧急"
-    }
-  ],
-  "favorites": [
-    {
-      "id": 1773647611496,
-      "name": "231321",
-      "job": "前端开发工程",
-      "type": "candidates"
-    }
-  ],
-  "interviews": [
-    {
-      "id": 1,
-      "name": "王小明",
-      "job": "UI设计师",
-      "time": "2023-11-25 14:00",
-      "type": "初试",
-      "status": "已结束",
-      "evaluation": "1. 基础知识考察\n2. 代码实战能力\n3. 团队协作沟通\n1. 业务逻辑洞察\n2. 交互设计理解\n3. 数据驱动意识\n321321321"
-    },
-    {
-      "id": 1772468699081,
-      "name": "测试",
-      "job": "UI设计师",
-      "time": "2026-03-03T00:24",
-      "type": "初试",
-      "status": "未通过"
-    },
-    {
-      "id": 1772614881093,
-      "name": "周231",
-      "job": "UI设计师",
-      "time": "2026-03-20T17:01",
-      "type": "初试",
-      "status": "待开始"
-    },
-    {
-      "id": 1772614901478,
-      "name": "ccc",
-      "job": "UI设计师",
-      "time": "2026-03-04T17:01",
-      "type": "初试",
-      "status": "待开始"
-    },
-    {
-      "id": 1773646653324,
-      "name": "321",
-      "job": "UI设计师",
-      "interviewer": "孙俪",
-      "time": "2026-03-16T15:37",
-      "type": "初试",
-      "status": "待开始"
+      "title": "系统维护公告",
+      "content": "系统将于本周六凌晨2点进行例行维护，届时将暂停服务。",
+      "time": "2023-11-19",
+      "unread": 0
     }
   ],
   "departments": [
@@ -261,7 +143,7 @@
       "id": 1,
       "name": "陈远",
       "dept": "研发部",
-      "role": "资深后端专家21",
+      "role": "资深后端专家",
       "email": "chenyuan@orange.com",
       "phone": "13812345671",
       "avatar": "👨‍💻"
@@ -374,5 +256,56 @@
       "phone": "13812345683",
       "avatar": "👹"
     }
-  ]
+  ],
+  "memos": [
+    {
+      "id": 1,
+      "title": "简历筛选要点",
+      "content": "1. 重点查看项目深度。2. 必须有大厂背景。",
+      "date": "11月20日",
+      "tag": "候选人"
+    }
+  ],
+  "favorites": [
+    {
+      "id": 1,
+      "name": "候选人 A",
+      "job": "前端专家",
+      "experience": "10年",
+      "degree": "本科"
+    }
+  ],
+  "interviews": [
+    {
+      "id": 1,
+      "name": "王小明",
+      "job": "UI设计师",
+      "time": "2023-11-25 14:00",
+      "type": "初试",
+      "status": "进行中",
+      "interviewer": "诸葛亮",
+      "version": 0
+    },
+    {
+      "id": 2,
+      "name": "李华",
+      "job": "产品经理",
+      "time": "2023-11-26 15:30",
+      "type": "复试",
+      "status": "待开始",
+      "interviewer": "诸葛亮",
+      "version": 0
+    },
+    {
+      "id": 3,
+      "name": "张强",
+      "job": "前端专家",
+      "time": "2023-11-24 10:00",
+      "type": "终试",
+      "status": "已通过",
+      "interviewer": "诸葛亮",
+      "version": 0
+    }
+  ],
+  "interview_logs": []
 }
