@@ -1,0 +1,378 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "admin",
+      "password": "$2a$10$eRkoMBFFzWHMlwqRRJkgpeSHGH2ducFEC7ud3cjdGV.3dTgl9qQMS",
+      "real_name": "Talent Root321321",
+      "role": "招聘主管",
+      "avatar": ""
+    }
+  ],
+  "invitations": [
+    {
+      "id": 1772467273740,
+      "name": "321",
+      "job": "321",
+      "recruiter": "Talent Root",
+      "status": "待邀约",
+      "remark": "",
+      "time": "3/2/2026, 4:01:13 PM"
+    },
+    {
+      "id": 1772468251843,
+      "name": "231321",
+      "job": "前端开发工程",
+      "recruiter": "Talent Root",
+      "status": "待邀约",
+      "remark": "321",
+      "time": "3/2/2026, 4:17:31 PM"
+    }
+  ],
+  "jobs": [
+    {
+      "id": 1,
+      "name": "资深前端开发工程师",
+      "dept": "研发部",
+      "apply_count": 120,
+      "interview_count": 12,
+      "status": "已暂停",
+      "time": "2023-11-10"
+    },
+    {
+      "id": 2,
+      "name": "产品经理 (AI方向)",
+      "dept": "产品部",
+      "apply_count": 45,
+      "interview_count": 8,
+      "status": "招聘中",
+      "time": "2023-11-12"
+    },
+    {
+      "id": 1772466363417,
+      "apply_count": 0,
+      "interview_count": 0,
+      "time": "2026-03-02",
+      "name": "测试",
+      "dept": "研发部",
+      "status": "招聘中"
+    },
+    {
+      "id": 1772466488132,
+      "apply_count": 0,
+      "interview_count": 0,
+      "time": "2026-03-02",
+      "name": "231321",
+      "dept": "研发部",
+      "status": "招聘中"
+    },
+    {
+      "id": 1772468316260,
+      "apply_count": 0,
+      "interview_count": 0,
+      "time": "2026-03-02",
+      "name": "测测231",
+      "dept": "研发部",
+      "status": "已下线"
+    }
+  ],
+  "messages": [
+    {
+      "id": 1772617926572,
+      "unread": 0,
+      "type": "任务提醒",
+      "title": "简历优化建议",
+      "content": "王五 面试官已对 候选人赵六 提交了评价。",
+      "time": "17:52"
+    },
+    {
+      "id": 1772617933028,
+      "unread": 0,
+      "type": "系统通知",
+      "title": "新职位申请",
+      "content": "下午两点有空聊一下那个架构师职位的二试安排吗？",
+      "time": "17:52"
+    },
+    {
+      "id": 1772617942505,
+      "unread": 0,
+      "type": "私信",
+      "title": "张经理的消息",
+      "content": "建议完善 视觉设计 岗位的招聘JD。",
+      "time": "17:52"
+    },
+    {
+      "id": 1773646452237,
+      "unread": 0,
+      "type": "任务提醒",
+      "title": "新职位申请",
+      "content": "下午两点有空聊一下那个架构师职位的二试安排吗？",
+      "time": "15:34"
+    },
+    {
+      "id": 1773648777277,
+      "unread": 0,
+      "type": "任务提醒",
+      "title": "面试官反馈",
+      "content": "候选人 李强 刚刚申请了 资深开发 职位。",
+      "time": "16:12"
+    },
+    {
+      "id": 1773648781419,
+      "unread": 1,
+      "type": "系统通知",
+      "title": "简历优化建议",
+      "content": "候选人 李强 刚刚申请了 资深开发 职位。",
+      "time": "16:13"
+    }
+  ],
+  "memos": [
+    {
+      "id": 1,
+      "title": "你好",
+      "content": "<ul><li><b><i><u>你好3213213</u></i></b><br></li><li><b><i><u><font color=\"#ff8a3d\">321</font></u></i></b></li><li><b><i><u><font color=\"#ff8a3d\">321</font></u></i></b></li><li><b><i><u><font color=\"#ff8a3d\">321</font></u></i></b></li></ul>",
+      "date": "11月20日",
+      "tag": "随笔",
+      "candidate": "231321",
+      "job": "测试"
+    },
+    {
+      "id": 1772468336885,
+      "date": "今天",
+      "title": "简历筛选要点",
+      "content": "1. 重点查看项目深度。2. <font color=\"#ff8a3d\">必须有大厂背景</font>。321321",
+      "tag": "随笔",
+      "candidate": "231321",
+      "job": "产品经理 (AI方向)"
+    },
+    {
+      "id": 1772614682697,
+      "date": "今天",
+      "title": "321321",
+      "content": "123123",
+      "tag": "随笔"
+    },
+    {
+      "id": 1772616316021,
+      "date": "今天",
+      "title": "ccc",
+      "content": "<b>123123</b>",
+      "tag": "随笔"
+    },
+    {
+      "id": 1772616333415,
+      "date": "今天",
+      "title": "太紧急了",
+      "content": "太紧急了太紧急了太紧急了太紧急了",
+      "tag": "紧急"
+    }
+  ],
+  "favorites": [
+    {
+      "id": 1773647611496,
+      "name": "231321",
+      "job": "前端开发工程",
+      "type": "candidates"
+    }
+  ],
+  "interviews": [
+    {
+      "id": 1,
+      "name": "王小明",
+      "job": "UI设计师",
+      "time": "2023-11-25 14:00",
+      "type": "初试",
+      "status": "已结束",
+      "evaluation": "1. 基础知识考察\n2. 代码实战能力\n3. 团队协作沟通\n1. 业务逻辑洞察\n2. 交互设计理解\n3. 数据驱动意识\n321321321"
+    },
+    {
+      "id": 1772468699081,
+      "name": "测试",
+      "job": "UI设计师",
+      "time": "2026-03-03T00:24",
+      "type": "初试",
+      "status": "未通过"
+    },
+    {
+      "id": 1772614881093,
+      "name": "周231",
+      "job": "UI设计师",
+      "time": "2026-03-20T17:01",
+      "type": "初试",
+      "status": "待开始"
+    },
+    {
+      "id": 1772614901478,
+      "name": "ccc",
+      "job": "UI设计师",
+      "time": "2026-03-04T17:01",
+      "type": "初试",
+      "status": "待开始"
+    },
+    {
+      "id": 1773646653324,
+      "name": "321",
+      "job": "UI设计师",
+      "interviewer": "孙俪",
+      "time": "2026-03-16T15:37",
+      "type": "初试",
+      "status": "待开始"
+    }
+  ],
+  "departments": [
+    {
+      "id": 1,
+      "name": "研发部",
+      "count": 42,
+      "icon": "💻",
+      "head": "张三"
+    },
+    {
+      "id": 2,
+      "name": "产品部",
+      "count": 18,
+      "icon": "🎨",
+      "head": "李四"
+    },
+    {
+      "id": 3,
+      "name": "市场部",
+      "count": 35,
+      "icon": "📈",
+      "head": "王五"
+    },
+    {
+      "id": 4,
+      "name": "人力资源",
+      "count": 12,
+      "icon": "🤝",
+      "head": "Admin"
+    },
+    {
+      "id": 5,
+      "name": "行政组",
+      "count": 8,
+      "icon": "🏢",
+      "head": "赵六"
+    }
+  ],
+  "employees": [
+    {
+      "id": 1,
+      "name": "陈远",
+      "dept": "研发部",
+      "role": "资深后端专家21",
+      "email": "chenyuan@orange.com",
+      "phone": "13812345671",
+      "avatar": "👨‍💻"
+    },
+    {
+      "id": 2,
+      "name": "林子舒",
+      "dept": "研发部",
+      "role": "前端架构师",
+      "email": "linzishu@orange.com",
+      "phone": "13812345672",
+      "avatar": "👩‍💻"
+    },
+    {
+      "id": 3,
+      "name": "赵大勇",
+      "dept": "研发部",
+      "role": "移动端开发",
+      "email": "zhaodayong@orange.com",
+      "phone": "13812345673",
+      "avatar": "📱"
+    },
+    {
+      "id": 4,
+      "name": "王梦琪",
+      "dept": "产品部",
+      "role": "高级产品经理",
+      "email": "wangmq@orange.com",
+      "phone": "13812345674",
+      "avatar": "👩‍💼"
+    },
+    {
+      "id": 5,
+      "name": "马化腾(虚构)",
+      "dept": "产品部",
+      "role": "产品顾问",
+      "email": "ma@orange.com",
+      "phone": "13812345675",
+      "avatar": "💼"
+    },
+    {
+      "id": 6,
+      "name": "周志华",
+      "dept": "市场部",
+      "role": "市场总监",
+      "email": "zhouzh@orange.com",
+      "phone": "13812345676",
+      "avatar": "📊"
+    },
+    {
+      "id": 7,
+      "name": "孙俪",
+      "dept": "市场部",
+      "role": "品牌专员",
+      "email": "sunli@orange.com",
+      "phone": "13812345677",
+      "avatar": "🎯"
+    },
+    {
+      "id": 8,
+      "name": "郑宇",
+      "dept": "人力资源",
+      "role": "HRBP",
+      "email": "zhengyu@orange.com",
+      "phone": "13812345678",
+      "avatar": "🤝"
+    },
+    {
+      "id": 9,
+      "name": "钱多多",
+      "dept": "人力资源",
+      "role": "招聘经理",
+      "email": "qiandd@orange.com",
+      "phone": "13812345679",
+      "avatar": "💰"
+    },
+    {
+      "id": 10,
+      "name": "刘备",
+      "dept": "行政组",
+      "role": "行政主管",
+      "email": "liubei@orange.com",
+      "phone": "13812345680",
+      "avatar": "🏰"
+    },
+    {
+      "id": 11,
+      "name": "诸葛亮",
+      "dept": "研发部",
+      "role": "技术VP",
+      "email": "zhuge@orange.com",
+      "phone": "13812345681",
+      "avatar": "🧙‍♂️"
+    },
+    {
+      "id": 12,
+      "name": "关羽",
+      "dept": "市场部",
+      "role": "大客户经理",
+      "email": "guanyu@orange.com",
+      "phone": "13812345682",
+      "avatar": "💪"
+    },
+    {
+      "id": 13,
+      "name": "张飞",
+      "dept": "行政组",
+      "role": "后勤组长",
+      "email": "zhangfei@orange.com",
+      "phone": "13812345683",
+      "avatar": "👹"
+    }
+  ]
+}

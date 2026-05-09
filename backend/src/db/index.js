@@ -1,0 +1,78 @@
+const low = require('lowdb');
+const FileSync = require('lowdb/adapters/FileSync');
+const path = require('path');
+const bcrypt = require('bcryptjs');
+
+const dbPath = path.resolve(__dirname, '../../data/db.json');
+const adapter = new FileSync(dbPath);
+const db = low(adapter);
+
+const initDb = () => {
+  db.defaults({
+    users: [],
+    invitations: [
+      { id: 1, name: '张伟', job: '前端开发', recruiter: 'Talent Root', time: '2023-11-20 14:00', status: '已邀约', remark: '已安排初试' },
+      { id: 2, name: '王敏', job: '后端架构', recruiter: 'Talent Root', time: '2023-11-19 10:30', status: '待邀约', remark: '需跟进面试官时间' },
+      { id: 3, name: '李芳', job: '资深产品经理', recruiter: '招聘小组 A', time: '2023-11-18 16:15', status: '已拒绝', remark: '薪资期望不符' }
+    ],
+    jobs: [
+      { id: 1, name: '资深前端开发工程师', dept: '研发部', apply_count: 120, interview_count: 12, status: '招聘中', time: '2023-11-10' },
+      { id: 2, name: '产品经理 (AI方向)', dept: '产品部', apply_count: 45, interview_count: 8, status: '招聘中', time: '2023-11-12' },
+      { id: 3, name: '视觉设计师', dept: '设计部', apply_count: 210, interview_count: 18, status: '面试中', time: '2023-11-08' }
+    ],
+    messages: [
+      { id: 1, type: '系统通知', title: '面试评价提醒', content: '您今天下午有3个面试评价待回收，请及时处理。', time: '10:00', unread: 1 },
+      { id: 2, type: '任务提醒', title: '简历待筛选', content: '「产品经理」岗位有12份新简历，请查阅。', time: '09:30', unread: 1 },
+      { id: 3, type: '私信', title: '张三 (HRBP)', content: '关于那个候选人的薪资方案，我有几个建议想和你讨论。', time: '昨天', unread: 0 },
+      { id: 4, type: '系统通知', title: '系统维护公告', content: '系统将于本周六凌晨2点进行例行维护，届时将暂停服务。', time: '2023-11-19', unread: 0 }
+    ],
+    departments: [
+      { id: 1, name: '研发部', count: 42, icon: '💻', head: '张三' },
+      { id: 2, name: '产品部', count: 18, icon: '🎨', head: '李四' },
+      { id: 3, name: '市场部', count: 35, icon: '📈', head: '王五' },
+      { id: 4, name: '人力资源', count: 12, icon: '🤝', head: 'Admin' },
+      { id: 5, name: '行政组', count: 8, icon: '🏢', head: '赵六' }
+    ],
+    employees: [
+      { id: 1, name: '陈远', dept: '研发部', role: '资深后端专家', email: 'chenyuan@orange.com', phone: '13812345671', avatar: '👨‍💻' },
+      { id: 2, name: '林子舒', dept: '研发部', role: '前端架构师', email: 'linzishu@orange.com', phone: '13812345672', avatar: '👩‍💻' },
+      { id: 3, name: '赵大勇', dept: '研发部', role: '移动端开发', email: 'zhaodayong@orange.com', phone: '13812345673', avatar: '📱' },
+      { id: 4, name: '王梦琪', dept: '产品部', role: '高级产品经理', email: 'wangmq@orange.com', phone: '13812345674', avatar: '👩‍💼' },
+      { id: 5, name: '马化腾(虚构)', dept: '产品部', role: '产品顾问', email: 'ma@orange.com', phone: '13812345675', avatar: '💼' },
+      { id: 6, name: '周志华', dept: '市场部', role: '市场总监', email: 'zhouzh@orange.com', phone: '13812345676', avatar: '📊' },
+      { id: 7, name: '孙俪', dept: '市场部', role: '品牌专员', email: 'sunli@orange.com', phone: '13812345677', avatar: '🎯' },
+      { id: 8, name: '郑宇', dept: '人力资源', role: 'HRBP', email: 'zhengyu@orange.com', phone: '13812345678', avatar: '🤝' },
+      { id: 9, name: '钱多多', dept: '人力资源', role: '招聘经理', email: 'qiandd@orange.com', phone: '13812345679', avatar: '💰' },
+      { id: 10, name: '刘备', dept: '行政组', role: '行政主管', email: 'liubei@orange.com', phone: '13812345680', avatar: '🏰' },
+      { id: 11, name: '诸葛亮', dept: '研发部', role: '技术VP', email: 'zhuge@orange.com', phone: '13812345681', avatar: '🧙‍♂️' },
+      { id: 12, name: '关羽', dept: '市场部', role: '大客户经理', email: 'guanyu@orange.com', phone: '13812345682', avatar: '💪' },
+      { id: 13, name: '张飞', dept: '行政组', role: '后勤组长', email: 'zhangfei@orange.com', phone: '13812345683', avatar: '👹' }
+    ],
+    memos: [
+      { id: 1, title: '简历筛选要点', content: '1. 重点查看项目深度。2. 必须有大厂背景。', date: '11月20日', tag: '候选人' }
+    ],
+    favorites: [
+      { id: 1, name: '候选人 A', job: '前端专家', experience: '10年', degree: '本科' }
+    ],
+    interviews: [
+      { id: 1, name: '王小明', job: 'UI设计师', time: '2023-11-25 14:00', type: '初试', status: '进行中' },
+      { id: 2, name: '李华', job: '产品经理', time: '2023-11-26 15:30', type: '复试', status: '待开始' },
+      { id: 3, name: '张强', job: '前端专家', time: '2023-11-24 10:00', type: '终试', status: '已结束' }
+    ]
+  }).write();
+
+  const admin = db.get('users').find({ username: 'admin' }).value();
+  if (!admin) {
+    const hashedPassword = bcrypt.hashSync('admin123', 10);
+    db.get('users').push({
+      id: 1,
+      username: 'admin',
+      password: hashedPassword,
+      real_name: 'Talent Root',
+      role: '招聘主管',
+      avatar: ''
+    }).write();
+  }
+};
+
+module.exports = { db, initDb };
