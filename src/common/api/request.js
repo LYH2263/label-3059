@@ -15,7 +15,13 @@ export const request = async (url, options = {}) => {
             if (window.location.pathname !== '/login') window.location.href = '/login';
         }
         const data = await response.json();
-        if (!response.ok) throw new Error(data.message || 'API request failed');
+        if (!response.ok) {
+            const error = new Error(data.message || 'API request failed');
+            error.status = response.status;
+            error.solution = data.solution;
+            error.currentData = data.currentData;
+            throw error;
+        }
         return data;
     } catch (error) {
         console.error('API error:', error);

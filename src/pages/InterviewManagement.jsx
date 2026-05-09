@@ -3,6 +3,7 @@ import { Sidebar, Header, FilterBar } from '../common/components/Layout';
 import { Calendar as CalendarIcon, List, Plus, CheckCircle, XCircle, StickyNote, Eye } from 'lucide-react';
 import { useToast, Modal } from '../common/components/Feedback';
 import { InterviewAPI, OrgAPI } from '../common/api/request';
+import { useOptimisticUpdate } from '../hooks/useOptimisticUpdate';
 
 export const InterviewManagement = () => {
     const [viewMode, setViewMode] = useState('list'); // list or calendar
@@ -24,7 +25,22 @@ export const InterviewManagement = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [editInterviewerModal, setEditInterviewerModal] = useState(null);
+    const [selectedInterviewer, setSelectedInterviewer] = useState('');
     const { showToast } = useToast();
+
+    const { update: optimisticUpdate, conflictInfo, clearConflict } = useOptimisticUpdate({
+        onConflict: (conflict) => {
+            showToast(conflict.message || '数据冲突，请刷新后重试', 'error');
+        },
+        onRefresh: () => fetchInterviews()
+    });
+
+    useEffect(() => {
+        if (conflictInfo) {
+            const timer = setTimeout(() => clearConflict(), 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [conflictInfo, clearConflict]);
 
     const handleApplyTemplate = (content) => {
         setEvalText(prev => prev + (prev ? '\n' : '') + content);
@@ -33,12 +49,18 @@ export const InterviewManagement = () => {
 
     const submitEvaluation = async () => {
         try {
-            await InterviewAPI.update(evalModal.id, { ...evalModal, evaluation: evalText, status: '已结束' });
+            const updateFields = { evaluation: evalText, status: evalModal.status };
+            await optimisticUpdate(evalModal.id, updateFields, evalModal.version);
             showToast('评价已提交并归档');
             setEvalModal(null);
             setEvalText('');
             fetchInterviews();
-        } catch { showToast('提交失败', 'error'); }
+        } catch (err) {
+            if (err.message && err.message.includes('冲突')) {
+                return;
+            }
+            showToast(err.message || '提交失败', 'error');
+        }
     };
 
     const fetchInterviews = async () => {
@@ -94,24 +116,42 @@ export const InterviewManagement = () => {
 
     const handleUpdateStatus = async (id, status) => {
         try {
-            await InterviewAPI.update(id, { status });
+            const interview = interviews.find(i => i.id === id);
+            if (!interview) {
+                showToast('面试记录不存在', 'error');
+                return;
+            }
+            await optimisticUpdate(id, { status }, interview.version);
             showToast(`状态已更新为: ${status}`);
             if (showRoomModal && showRoomModal.id === id) {
                 setShowRoomModal({ ...showRoomModal, status });
             }
             fetchInterviews();
         } catch (err) {
+            if (err.message && (err.message.includes('冲突') || err.message.includes('不允许'))) {
+                return;
+            }
             showToast('更新失败', 'error');
         }
     };
 
     const handleUpdateInterviewer = async (id, interviewer) => {
         try {
-            await InterviewAPI.update(id, { interviewer });
+            const interview = interviews.find(i => i.id === id);
+            if (!interview) {
+                showToast('面试记录不存在', 'error');
+                return;
+            }
+            await optimisticUpdate(id, { interviewer }, interview.version);
             showToast('面试官分配已更新');
             setEditInterviewerModal(null);
             fetchInterviews();
-        } catch { showToast('分配失败', 'error'); }
+        } catch (err) {
+            if (err.message && err.message.includes('冲突')) {
+                return;
+            }
+            showToast('分配失败', 'error');
+        }
     };
 
     const handleDelete = async (id) => {
@@ -323,7 +363,7 @@ export const InterviewManagement = () => {
                                 <div style={{ marginTop: 'auto', padding: '16px', background: '#F1F5F9', borderRadius: '12px' }}>
                                     <h4 style={{ fontWeight: 700, fontSize: '14px', marginBottom: '12px' }}>最终结论</h4>
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                                        {['已通过', '未通过', '进行中'].map(s => (
+                                        {['已通过', '未通过'].map(s => (
                                             <button 
                                                 key={s} 
                                                 onClick={() => setEvalModal({ ...evalModal, status: s })}
@@ -405,27 +445,36 @@ export const InterviewManagement = () => {
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                 <div style={{ fontSize: '15px', fontWeight: 600 }}>结论设置</div>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                {showRoomModal.status === '待开始' && (
                                     <button
-                                        onClick={() => handleUpdateStatus(showRoomModal.id, '已通过')}
-                                        style={{ background: '#ECFDF5', color: '#10B981', border: '1px solid #A7F3D0', padding: '12px', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
+                                        onClick={() => handleUpdateStatus(showRoomModal.id, '进行中')}
+                                        className="btn-secondary"
+                                        style={{ width: '100%', color: '#3B82F6', border: '1px solid #BFDBFE' }}
                                     >
-                                        <CheckCircle size={20} /> <span style={{ fontSize: '13px', fontWeight: 600 }}>通过面试</span>
+                                        设为面试中
                                     </button>
-                                    <button
-                                        onClick={() => handleUpdateStatus(showRoomModal.id, '未通过')}
-                                        style={{ background: '#FEF2F2', color: '#EF4444', border: '1px solid #FECACA', padding: '12px', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
-                                    >
-                                        <XCircle size={20} /> <span style={{ fontSize: '13px', fontWeight: 600 }}>不通过</span>
-                                    </button>
-                                </div>
-                                <button
-                                    onClick={() => handleUpdateStatus(showRoomModal.id, '进行中')}
-                                    className="btn-secondary"
-                                    style={{ width: '100%', color: '#3B82F6', border: '1px solid #BFDBFE' }}
-                                >
-                                    设为面试中
-                                </button>
+                                )}
+                                {showRoomModal.status === '进行中' && (
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                        <button
+                                            onClick={() => handleUpdateStatus(showRoomModal.id, '已通过')}
+                                            style={{ background: '#ECFDF5', color: '#10B981', border: '1px solid #A7F3D0', padding: '12px', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
+                                        >
+                                            <CheckCircle size={20} /> <span style={{ fontSize: '13px', fontWeight: 600 }}>通过面试</span>
+                                        </button>
+                                        <button
+                                            onClick={() => handleUpdateStatus(showRoomModal.id, '未通过')}
+                                            style={{ background: '#FEF2F2', color: '#EF4444', border: '1px solid #FECACA', padding: '12px', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
+                                        >
+                                            <XCircle size={20} /> <span style={{ fontSize: '13px', fontWeight: 600 }}>不通过</span>
+                                        </button>
+                                    </div>
+                                )}
+                                {(showRoomModal.status === '已通过' || showRoomModal.status === '未通过') && (
+                                    <div style={{ padding: '12px', background: '#F8FAFC', borderRadius: '8px', fontSize: '13px', color: '#64748B', textAlign: 'center' }}>
+                                        面试已结束，状态不可变更
+                                    </div>
+                                )}
                             </div>
                             <div style={{ marginTop: 'auto', textAlign: 'center' }}>
                                 <button className="btn-primary" style={{ width: '100%' }} onClick={() => setShowRoomModal(null)}>退出频道</button>
@@ -443,7 +492,7 @@ export const InterviewManagement = () => {
                             <select 
                                 style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0' }}
                                 defaultValue={editInterviewerModal.interviewer}
-                                onChange={(e) => handleUpdateStatus(editInterviewerModal.id, { interviewer: e.target.value })}
+                                onChange={(e) => setSelectedInterviewer(e.target.value)}
                             >
                                 {interviewers.map(emp => <option key={emp.id} value={emp.name}>{emp.name} ({emp.dept})</option>)}
                             </select>
@@ -451,7 +500,7 @@ export const InterviewManagement = () => {
                         <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
                             <button style={{ flex: 1, background: '#F1F5F9' }} onClick={() => setEditInterviewerModal(null)}>取消</button>
                             <button className="btn-primary" style={{ flex: 1 }} onClick={() => {
-                                const val = document.querySelector('select').value;
+                                const val = selectedInterviewer || editInterviewerModal.interviewer;
                                 handleUpdateInterviewer(editInterviewerModal.id, val);
                             }}>确认提交</button>
                         </div>
