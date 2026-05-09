@@ -5,6 +5,8 @@ const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { db, initDb } = require('./src/db');
+const { optimisticLockMiddleware, validateStatusTransition } = require('./src/middleware/concurrency');
+const { logInterviewChange } = require('./src/utils/auditLogger');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -139,17 +141,82 @@ app.get('/api/interviews', authenticateToken, (req, res) => {
     res.json(db.get('interviews').value());
 });
 app.post('/api/interviews', authenticateToken, (req, res) => {
-    const newItem = { id: Date.now(), ...req.body };
+    const newItem = { id: Date.now(), version: 1, ...req.body };
     db.get('interviews').push(newItem).write();
+    logInterviewChange({
+        interviewId: newItem.id,
+        operator: req.user.username,
+        action: '创建面试',
+        changes: newItem
+    });
     res.status(201).json(newItem);
 });
-app.put('/api/interviews/:id', authenticateToken, (req, res) => {
-    db.get('interviews').find({ id: parseInt(req.params.id) }).assign(req.body).write();
-    res.json({ message: 'Updated' });
+app.put('/api/interviews/:id', authenticateToken, optimisticLockMiddleware, validateStatusTransition, (req, res) => {
+    const interviewId = parseInt(req.params.id);
+    const current = req.interview;
+    const { version, ...updateFields } = req.body;
+
+    if (Object.keys(updateFields).length === 0) {
+        return res.status(400).json({
+            message: '未指定需要更新的字段',
+            solution: '请在请求体中包含至少一个需要更新的字段'
+        });
+    }
+
+    const forbiddenFields = ['id'];
+    const safeFields = {};
+    const changes = {};
+
+    for (const [key, value] of Object.entries(updateFields)) {
+        if (forbiddenFields.includes(key)) continue;
+        if (current[key] !== value) {
+            safeFields[key] = value;
+            changes[key] = { from: current[key], to: value };
+        }
+    }
+
+    if (Object.keys(safeFields).length === 0) {
+        return res.json({ message: '数据未变更', data: current });
+    }
+
+    safeFields.version = current.version + 1;
+
+    db.get('interviews').find({ id: interviewId }).assign(safeFields).write();
+
+    if (Object.keys(changes).length > 0) {
+        logInterviewChange({
+            interviewId,
+            operator: req.user.username,
+            action: '更新面试',
+            changes
+        });
+    }
+
+    const updated = db.get('interviews').find({ id: interviewId }).value();
+    res.json({ message: 'Updated', data: updated });
 });
 app.delete('/api/interviews/:id', authenticateToken, (req, res) => {
-    db.get('interviews').remove({ id: parseInt(req.params.id) }).write();
+    const interviewId = parseInt(req.params.id);
+    const current = db.get('interviews').find({ id: interviewId }).value();
+    if (current) {
+        logInterviewChange({
+            interviewId,
+            operator: req.user.username,
+            action: '删除面试',
+            changes: { deleted: current }
+        });
+    }
+    db.get('interviews').remove({ id: interviewId }).write();
     res.json({ message: 'Deleted' });
+});
+
+app.get('/api/interview-logs', authenticateToken, (req, res) => {
+    const interviewId = req.query.interviewId ? parseInt(req.query.interviewId) : null;
+    let logs = db.get('interview_logs').value();
+    if (interviewId) {
+        logs = logs.filter(l => l.interviewId === interviewId);
+    }
+    res.json(logs);
 });
 
 // Org Chart & Employees
