@@ -374,5 +374,20 @@
       "phone": "13812345683",
       "avatar": "👹"
     }
+  ],
+  "interview_logs": [
+    {
+      "id": 1778520105217,
+      "interviewId": 1,
+      "userId": 1,
+      "username": "admin",
+      "realName": "管理员",
+      "action": "测试操作",
+      "oldValue": "{\"status\":\"进行中\"}",
+      "newValue": "{\"status\":\"已通过\"}",
+      "changedFields": "status",
+      "timestamp": "2026-05-11T17:21:45.217Z",
+      "ip": "127.0.0.1"
+    }
   ]
 }

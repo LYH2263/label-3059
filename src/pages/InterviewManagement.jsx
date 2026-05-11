@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Sidebar, Header, FilterBar } from '../common/components/Layout';
-import { Calendar as CalendarIcon, List, Plus, CheckCircle, XCircle, StickyNote, Eye } from 'lucide-react';
+import { Calendar as CalendarIcon, List, Plus, CheckCircle, XCircle, StickyNote, Eye, AlertTriangle } from 'lucide-react';
 import { useToast, Modal } from '../common/components/Feedback';
 import { InterviewAPI, OrgAPI } from '../common/api/request';
+import { useOptimisticUpdate } from '../hooks/useOptimisticUpdate';
 
 export const InterviewManagement = () => {
     const [viewMode, setViewMode] = useState('list'); // list or calendar
@@ -24,7 +25,31 @@ export const InterviewManagement = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [editInterviewerModal, setEditInterviewerModal] = useState(null);
+    const [conflictModal, setConflictModal] = useState(null);
     const { showToast } = useToast();
+
+    const handleUpdateSuccess = useCallback((result) => {
+        if (result && result.data && result.data.version) {
+            setInterviews(prev => prev.map(i =>
+                i.id === result.data.id ? result.data : i
+            ));
+        }
+    }, []);
+
+    const handleUpdateError = useCallback((error) => {
+        if (error.message && error.message.includes('冲突')) {
+            setConflictModal({
+                message: error.message,
+                solution: error.solution || '请刷新页面获取最新数据后再尝试'
+            });
+        }
+    }, []);
+
+    const { executeUpdate, isLoading } = useOptimisticUpdate(
+        InterviewAPI.update,
+        handleUpdateSuccess,
+        handleUpdateError
+    );
 
     const handleApplyTemplate = (content) => {
         setEvalText(prev => prev + (prev ? '\n' : '') + content);
@@ -33,12 +58,21 @@ export const InterviewManagement = () => {
 
     const submitEvaluation = async () => {
         try {
-            await InterviewAPI.update(evalModal.id, { ...evalModal, evaluation: evalText, status: '已结束' });
+            const currentInterview = interviews.find(i => i.id === evalModal.id);
+            await executeUpdate(evalModal.id, {
+                version: currentInterview?.version || 1,
+                evaluation: evalText,
+                status: evalModal.status
+            });
             showToast('评价已提交并归档');
             setEvalModal(null);
             setEvalText('');
             fetchInterviews();
-        } catch { showToast('提交失败', 'error'); }
+        } catch (err) {
+            if (!err.message.includes('冲突')) {
+                showToast('提交失败', 'error');
+            }
+        }
     };
 
     const fetchInterviews = async () => {
@@ -94,24 +128,38 @@ export const InterviewManagement = () => {
 
     const handleUpdateStatus = async (id, status) => {
         try {
-            await InterviewAPI.update(id, { status });
+            const currentInterview = interviews.find(i => i.id === id);
+            await executeUpdate(id, {
+                version: currentInterview?.version || 1,
+                status
+            });
             showToast(`状态已更新为: ${status}`);
             if (showRoomModal && showRoomModal.id === id) {
                 setShowRoomModal({ ...showRoomModal, status });
             }
             fetchInterviews();
         } catch (err) {
-            showToast('更新失败', 'error');
+            if (!err.message.includes('冲突') && !err.message.includes('状态转换')) {
+                showToast(err.message || '更新失败', 'error');
+            }
         }
     };
 
     const handleUpdateInterviewer = async (id, interviewer) => {
         try {
-            await InterviewAPI.update(id, { interviewer });
+            const currentInterview = interviews.find(i => i.id === id);
+            await executeUpdate(id, {
+                version: currentInterview?.version || 1,
+                interviewer
+            });
             showToast('面试官分配已更新');
             setEditInterviewerModal(null);
             fetchInterviews();
-        } catch { showToast('分配失败', 'error'); }
+        } catch (err) {
+            if (!err.message.includes('冲突')) {
+                showToast('分配失败', 'error');
+            }
+        }
     };
 
     const handleDelete = async (id) => {
@@ -454,6 +502,44 @@ export const InterviewManagement = () => {
                                 const val = document.querySelector('select').value;
                                 handleUpdateInterviewer(editInterviewerModal.id, val);
                             }}>确认提交</button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+            {conflictModal && (
+                <Modal title="⚠️ 数据冲突" onClose={() => setConflictModal(null)}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center', padding: '16px 0' }}>
+                        <AlertTriangle size={64} color="#F59E0B" />
+                        <div style={{ textAlign: 'center' }}>
+                            <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '12px', color: '#1E293B' }}>
+                                检测到数据冲突
+                            </h3>
+                            <p style={{ fontSize: '14px', color: '#64748B', marginBottom: '8px' }}>
+                                {conflictModal.message}
+                            </p>
+                            <p style={{ fontSize: '13px', color: '#F59E0B', background: '#FFFBEB', padding: '8px 12px', borderRadius: '6px' }}>
+                                💡 {conflictModal.solution}
+                            </p>
+                        </div>
+                        <div style={{ display: 'flex', gap: '12px', width: '100%', marginTop: '16px' }}>
+                            <button
+                                className="btn-secondary"
+                                style={{ flex: 1 }}
+                                onClick={() => setConflictModal(null)}
+                            >
+                                稍后处理
+                            </button>
+                            <button
+                                className="btn-primary"
+                                style={{ flex: 1 }}
+                                onClick={() => {
+                                    setConflictModal(null);
+                                    fetchInterviews();
+                                    showToast('数据已刷新');
+                                }}
+                            >
+                                立即刷新
+                            </button>
                         </div>
                     </div>
                 </Modal>

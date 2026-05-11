@@ -5,6 +5,16 @@ const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { db, initDb } = require('./src/db');
+const {
+    optimisticLockMiddleware,
+    validateStatusTransition,
+    applyPartialUpdate
+} = require('./src/middleware/concurrency');
+const {
+    logInterviewChange,
+    calculateChangedFields,
+    inferActionType
+} = require('./src/utils/auditLogger');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -139,16 +149,73 @@ app.get('/api/interviews', authenticateToken, (req, res) => {
     res.json(db.get('interviews').value());
 });
 app.post('/api/interviews', authenticateToken, (req, res) => {
-    const newItem = { id: Date.now(), ...req.body };
+    const newItem = {
+        id: Date.now(),
+        version: 1,
+        createdAt: new Date().toISOString(),
+        ...req.body
+    };
     db.get('interviews').push(newItem).write();
+
+    logInterviewChange({
+        interviewId: newItem.id,
+        user: req.user,
+        action: '创建面试安排',
+        oldValue: {},
+        newValue: newItem,
+        changedFields: Object.keys(newItem)
+    });
+
     res.status(201).json(newItem);
 });
-app.put('/api/interviews/:id', authenticateToken, (req, res) => {
-    db.get('interviews').find({ id: parseInt(req.params.id) }).assign(req.body).write();
-    res.json({ message: 'Updated' });
+app.put('/api/interviews/:id', authenticateToken, optimisticLockMiddleware, validateStatusTransition, (req, res) => {
+    const interviewId = parseInt(req.params.id);
+    const oldValue = { ...req.currentInterview };
+    const updateData = req.body;
+
+    const newValue = applyPartialUpdate(oldValue, updateData);
+    const changedFields = calculateChangedFields(oldValue, newValue);
+
+    db.get('interviews').find({ id: interviewId }).assign(newValue).write();
+
+    const action = inferActionType(changedFields, oldValue, newValue);
+    logInterviewChange({
+        interviewId,
+        user: req.user,
+        action,
+        oldValue,
+        newValue,
+        changedFields
+    });
+
+    res.json({
+        message: 'Updated',
+        data: newValue,
+        newVersion: newValue.version
+    });
+});
+app.get('/api/interviews/:id/logs', authenticateToken, (req, res) => {
+    const { getInterviewLogs } = require('./src/utils/auditLogger');
+    const logs = getInterviewLogs(req.params.id);
+    res.json(logs);
 });
 app.delete('/api/interviews/:id', authenticateToken, (req, res) => {
-    db.get('interviews').remove({ id: parseInt(req.params.id) }).write();
+    const interviewId = parseInt(req.params.id);
+    const interview = db.get('interviews').find({ id: interviewId }).value();
+    
+    db.get('interviews').remove({ id: interviewId }).write();
+
+    if (interview) {
+        logInterviewChange({
+            interviewId,
+            user: req.user,
+            action: '删除/取消面试',
+            oldValue: interview,
+            newValue: {},
+            changedFields: ['status', 'deleted']
+        });
+    }
+
     res.json({ message: 'Deleted' });
 });
 
