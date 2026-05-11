@@ -55,10 +55,11 @@ const initDb = () => {
       { id: 1, name: '候选人 A', job: '前端专家', experience: '10年', degree: '本科' }
     ],
     interviews: [
-      { id: 1, name: '王小明', job: 'UI设计师', time: '2023-11-25 14:00', type: '初试', status: '进行中' },
-      { id: 2, name: '李华', job: '产品经理', time: '2023-11-26 15:30', type: '复试', status: '待开始' },
-      { id: 3, name: '张强', job: '前端专家', time: '2023-11-24 10:00', type: '终试', status: '已结束' }
-    ]
+      { id: 1, name: '王小明', job: 'UI设计师', time: '2023-11-25 14:00', type: '初试', status: '进行中', version: 1, createdAt: new Date().toISOString() },
+      { id: 2, name: '李华', job: '产品经理', time: '2023-11-26 15:30', type: '复试', status: '待开始', version: 1, createdAt: new Date().toISOString() },
+      { id: 3, name: '张强', job: '前端专家', time: '2023-11-24 10:00', type: '终试', status: '已通过', version: 1, createdAt: new Date().toISOString() }
+    ],
+    interview_logs: []
   }).write();
 
   const admin = db.get('users').find({ username: 'admin' }).value();
